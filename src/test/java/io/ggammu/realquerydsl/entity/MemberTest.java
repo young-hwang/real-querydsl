@@ -123,4 +123,30 @@ class MemberTest {
         assertThat(member6.getUsername()).isEqualTo("member6");
         assertThat(memberNull.getUsername()).isNull();
     }
+
+    @Test
+    void paging1() {
+        List<Member> results = query.selectFrom(member)
+                .orderBy(member.username.desc())
+                .offset(1)
+                .limit(2)
+                .fetch();
+
+        assertThat(results.size()).isEqualTo(2);
+    }
+
+    @Test
+    void paging2() {
+        QueryResults<Member> fetchResults = query.selectFrom(member)
+                .orderBy(member.username.desc())
+                .offset(1)
+                .limit(2)
+                .fetchResults();
+
+        assertThat(fetchResults.getTotal()).isEqualTo(4);
+        assertThat(fetchResults.getLimit()).isEqualTo(2);
+        assertThat(fetchResults.getOffset()).isEqualTo(1);
+        assertThat(fetchResults.getResults().size()).isEqualTo(2);
+    }
+
 }
