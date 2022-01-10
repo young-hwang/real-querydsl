@@ -2,8 +2,10 @@ package io.ggammu.realquerydsl.entity;
 
 import com.querydsl.core.QueryFactory;
 import com.querydsl.core.QueryResults;
+import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import static io.ggammu.realquerydsl.entity.QMember.member;
+import static io.ggammu.realquerydsl.entity.QTeam.team;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -147,6 +149,45 @@ class MemberTest {
         assertThat(fetchResults.getLimit()).isEqualTo(2);
         assertThat(fetchResults.getOffset()).isEqualTo(1);
         assertThat(fetchResults.getResults().size()).isEqualTo(2);
+    }
+
+    @Test
+    void aggregation() {
+        List<Tuple> result = query.select(
+                        member.count(),
+                        member.age.sum(),
+                        member.age.avg(),
+                        member.age.max(),
+                        member.age.min())
+                .from(member)
+                .fetch();
+
+        Tuple tuple = result.get(0);
+        assertThat(tuple.get(member.count())).isEqualTo(4);
+        assertThat(tuple.get(member.age.sum())).isEqualTo(100);
+        assertThat(tuple.get(member.age.avg())).isEqualTo(25);
+        assertThat(tuple.get(member.age.max())).isEqualTo(40);
+        assertThat(tuple.get(member.age.min())).isEqualTo(10);
+    }
+
+    @Test
+    public void group() throws Exception {
+        //given
+        List<Tuple> results = query.select(team.name, member.age.avg())
+                .from(member)
+                .join(member.team, team)
+                .groupBy(team.name)
+                .fetch();
+        //when
+        Tuple teamA = results.get(0);
+        Tuple teamB = results.get(1);
+
+        //then
+        assertThat(teamA.get(team.name)).isEqualTo("teamA");
+        assertThat(teamA.get(member.age.avg())).isEqualTo(15);
+
+        assertThat(teamB.get(team.name)).isEqualTo("teamB");
+        assertThat(teamB.get(member.age.avg())).isEqualTo(35);
     }
 
 }
