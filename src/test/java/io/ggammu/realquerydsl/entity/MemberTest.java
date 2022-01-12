@@ -1,5 +1,6 @@
 package io.ggammu.realquerydsl.entity;
 
+import ch.qos.logback.core.net.SyslogOutputStream;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -7,10 +8,12 @@ import static io.ggammu.realquerydsl.entity.QMember.member;
 import static io.ggammu.realquerydsl.entity.QTeam.team;
 import java.util.List;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -227,6 +230,7 @@ class MemberTest {
                 .fetch();
 
         //then
+        result.forEach(r -> System.out.println("t=" + r));
         assertThat(result)
                 .extracting("username")
                 .containsExactly("teamA", "teamB");
@@ -250,9 +254,45 @@ class MemberTest {
                 .fetch();
 
         //then
-        results.forEach(r -> {
-            System.out.println("t=" + r);
-        });
+        results.forEach(r -> System.out.println("t=" + r));
     }
-    
+
+    @Autowired
+    EntityManagerFactory entityManagerFactory;
+
+    @Test
+    void fetchJoinNo() {
+        //given
+        entityManager.flush();
+        entityManager.clear();
+
+        Member findMember = query.selectFrom(member)
+                .where(member.username.eq("member1"))
+                .fetchOne();
+
+        //when
+        boolean loaded = entityManagerFactory.getPersistenceUnitUtil().isLoaded(findMember.getTeam());
+
+        //then
+        assertThat(loaded).as("페치 조인 미적용").isFalse();
+    }
+
+    @Test
+    void fetchJoinUse() {
+        //given
+        entityManager.flush();
+        entityManager.clear();
+
+        Member findMember = query.selectFrom(member)
+                .join(member.team, team).fetchJoin()
+                .where(member.username.eq("member1"))
+                .fetchOne();
+
+        //when
+        boolean loaded = entityManagerFactory.getPersistenceUnitUtil().isLoaded(findMember.getTeam());
+
+        //then
+        assertThat(loaded).as("페치 조인 적용").isTrue();
+    }
+
 }
