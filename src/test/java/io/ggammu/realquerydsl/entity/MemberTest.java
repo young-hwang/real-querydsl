@@ -3,6 +3,7 @@ package io.ggammu.realquerydsl.entity;
 import ch.qos.logback.core.net.SyslogOutputStream;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import static io.ggammu.realquerydsl.entity.QMember.member;
 import static io.ggammu.realquerydsl.entity.QTeam.team;
@@ -293,6 +294,27 @@ class MemberTest {
 
         //then
         assertThat(loaded).as("페치 조인 적용").isTrue();
+    }
+
+    @Test
+    void subQuery() {
+        //given
+        QMember memberSub = new QMember("memberSub");
+
+        List<Member> result = query
+                .selectFrom(member)
+                .where(member.age.eq(
+                        JPAExpressions
+                                .select(memberSub.age.max())
+                                .from(memberSub)
+                ))
+                .fetch();
+
+        //when
+
+        //then
+        assertThat(result).extracting("age")
+                .containsExactly(40);
     }
 
 }
