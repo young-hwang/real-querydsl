@@ -317,4 +317,24 @@ class MemberTest {
                 .containsExactly(40);
     }
 
+    @Test
+    void subQueryGoe() {
+        //given
+        QMember memberSub = new QMember("memberSub");
+
+        List<Member> result = query
+                .selectFrom(member)
+                .where(member.age.goe(
+                        JPAExpressions
+                                .select(memberSub.age.avg())
+                                .from(memberSub)
+                ))
+                .fetch();
+
+        //when
+
+        //then
+        assertThat(result).extracting("age")
+                .containsExactly(30, 40);
+    }
 }
