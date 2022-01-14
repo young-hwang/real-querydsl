@@ -337,4 +337,46 @@ class MemberTest {
         assertThat(result).extracting("age")
                 .containsExactly(30, 40);
     }
+
+    @Test
+    void subQueryIn() {
+        //given
+        QMember memberSub = new QMember("memberSub");
+
+        List<Member> result = query
+                .selectFrom(member)
+                .where(member.age.in(
+                        JPAExpressions
+                                .select(memberSub.age)
+                                .from(memberSub)
+                                .where(memberSub.age.gt(10))
+                ))
+                .fetch();
+
+        //when
+
+        //then
+        assertThat(result).extracting("age")
+                .containsExactly(20, 30, 40);
+    }
+
+    @Test
+    void selectSubQuery() {
+        //given
+        QMember memberSub = new QMember("memberSub");
+
+        List<Tuple> result = query
+                .select(member.username,
+                        JPAExpressions.select(memberSub.age.avg())
+                                .from(memberSub)
+                )
+                .from(member)
+                .fetch();
+
+        //when
+
+        //then
+        result.forEach(System.out::println);
+    }
+
 }
