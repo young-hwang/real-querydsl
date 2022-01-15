@@ -1,6 +1,5 @@
 package io.ggammu.realquerydsl.entity;
 
-import ch.qos.logback.core.net.SyslogOutputStream;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.JPAExpressions;
@@ -379,4 +378,21 @@ class MemberTest {
         result.forEach(System.out::println);
     }
 
+
+    @Test
+    void basicCase() {
+        //given
+        List<String> result = query
+                .select(member.age
+                        .when(10).then("열살")
+                        .when(20).then("스무살")
+                        .otherwise("기타"))
+                .from(member)
+                .fetch();
+
+        //when
+
+        //then
+        result.forEach(System.out::println);
+    }
 }
