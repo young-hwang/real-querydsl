@@ -2,10 +2,12 @@ package io.ggammu.realquerydsl.entity;
 
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import io.ggammu.realquerydsl.dto.MemberDto;
 import static io.ggammu.realquerydsl.entity.QMember.member;
 import static io.ggammu.realquerydsl.entity.QTeam.team;
 import java.util.List;
@@ -429,5 +431,119 @@ class MemberTest {
         result.forEach(System.out::println);
     }
 
+    @Test
+    void concat() {
+        //given
+        List<String> fetch = query.select(member.username.concat("_").concat(member.age.stringValue()))
+                .from(member)
+                .where(member.username.eq("member1"))
+                .fetch();
+        //when
+
+        //then
+        fetch.forEach(System.out::println);
+    }
+
+    @Test
+    void simpleProjection() {
+        //given
+        List<String> fetch = query
+                .select(member.username)
+                .from(member)
+                .fetch();
+        //when
+
+        //then
+        fetch.forEach(System.out::println);
+    }
+
+    @Test
+    void tupleProjection() {
+        //given
+        List<Tuple> fetch = query
+                .select(member.username, member.age)
+                .from(member)
+                .fetch();
+        //when
+
+        //then
+        for (Tuple tuple : fetch) {
+            String name = tuple.get(member.username);
+            Integer age = tuple.get(member.age);
+            System.out.println("username = " + name);
+            System.out.println("age = " + age);
+        }
+    }
+
+    @Test
+    void findDtoByJpql() {
+        //given
+        List<MemberDto> resultList = entityManager.createQuery(
+                        "select new io.ggammu.realquerydsl.dto.MemberDto(m.username, m.age) from Member m",
+                        MemberDto.class)
+                .getResultList();
+        //when
+
+        //then
+        for (MemberDto memberDto : resultList) {
+            System.out.println("memberDto = " + memberDto);
+        }
+    }
+
+    @Test
+    void findDtoBySetter() {
+        //given
+        List<MemberDto> fetch = query
+                .select(Projections.bean(MemberDto.class,
+                        member.username,
+                        member.age
+                ))
+                .from(member)
+                .fetch();
+
+        //when
+
+        //then
+        for (MemberDto memberDto : fetch) {
+            System.out.println("member = " + memberDto);
+        }
+    }
+
+    @Test
+    void findDtoByField() {
+        //given
+        List<MemberDto> fetch = query
+                .select(Projections.fields(MemberDto.class,
+                        member.username,
+                        member.age
+                ))
+                .from(member)
+                .fetch();
+
+        //when
+
+        //then
+        for (MemberDto memberDto : fetch) {
+            System.out.println("member = " + memberDto);
+        }
+    }
+
+    @Test
+    void findDtoByConstructor() {
+        //given
+        List<MemberDto> fetch = query
+                .select(Projections.constructor(MemberDto.class,
+                        member.username,
+                        member.age
+                ))
+                .from(member)
+                .fetch();
+        //when
+
+        //then
+        for (MemberDto memberDto : fetch) {
+            System.out.println("member = " + memberDto);
+        }
+    }
 
 }
