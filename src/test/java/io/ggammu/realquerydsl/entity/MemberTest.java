@@ -1,7 +1,9 @@
 package io.ggammu.realquerydsl.entity;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
@@ -561,7 +563,7 @@ class MemberTest {
         //when
 
         //then
-        for (UserDto userDto: fetch) {
+        for (UserDto userDto : fetch) {
             System.out.println("member = " + userDto);
         }
     }
@@ -577,9 +579,77 @@ class MemberTest {
         //when
 
         //then
-        for (MemberDto memberDto: fetch) {
+        for (MemberDto memberDto : fetch) {
             System.out.println("member = " + memberDto);
         }
+    }
+
+    @Test
+    void dynamicQueryByBooleanBuilder() {
+        //given
+        String usernameParam = "member1";
+        Integer ageParam = null;
+
+        List<Member> result = searchMember(usernameParam, ageParam);
+        //when
+
+        //then
+        assertThat(result.size()).isEqualTo(1);
+    }
+
+    private List<Member> searchMember(String usernameParam, Integer ageParam) {
+        BooleanBuilder booleanBuilder = new BooleanBuilder();
+
+        if (usernameParam != null)
+            booleanBuilder.and(member.username.eq(usernameParam));
+
+        if (ageParam != null)
+            booleanBuilder.and(member.age.eq(ageParam));
+
+        List<Member> fetch = query
+                .selectFrom(member)
+                .where(booleanBuilder)
+                .fetch();
+
+        return fetch;
+    }
+
+    @Test
+    void dynamicQueryByWhereParam() {
+        //given
+        String usernameParam = "member1";
+        Integer ageParam = null;
+
+        List<Member> result = searchMember2(usernameParam, ageParam);
+
+        //when
+
+        //then
+        assertThat(result.size()).isEqualTo(1);
+    }
+
+    private List<Member> searchMember2(String usernameParam, Integer ageParam) {
+        List<Member> fetch = query
+                .selectFrom(member)
+                .where(usernameEq(usernameParam),
+                        ageEq(ageParam))
+                .fetch();
+
+        return fetch;
+    }
+
+    private Predicate ageEq(Integer ageParam) {
+        if (ageParam != null)
+            return member.age.eq(ageParam);
+        else
+            return null;
+    }
+
+    private Predicate usernameEq(String usernameParam) {
+        if (usernameParam != null)
+            return member.username.eq(usernameParam);
+        else
+            return null;
     }
 
 }
