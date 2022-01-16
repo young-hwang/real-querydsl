@@ -2,6 +2,8 @@ package io.ggammu.realquerydsl.entity;
 
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import static io.ggammu.realquerydsl.entity.QMember.member;
@@ -395,4 +397,37 @@ class MemberTest {
         //then
         result.forEach(System.out::println);
     }
+
+    @Test
+    void complexCase() {
+        //given
+        List<String> result = query
+                .select(new CaseBuilder()
+                        .when(member.age.between(0, 20)).then("0~20살")
+                        .when(member.age.between(21, 30)).then("21~30살")
+                        .otherwise("기타"))
+                .from(member)
+                .fetch();
+
+        //when
+
+        //then
+        result.forEach(System.out::println);
+    }
+
+    @Test
+    void constant() {
+        //given
+        List<Tuple> result = query
+                .select(member.username, Expressions.constant("A"))
+                .from(member)
+                .fetch();
+
+        //when
+
+        //then
+        result.forEach(System.out::println);
+    }
+
+
 }
