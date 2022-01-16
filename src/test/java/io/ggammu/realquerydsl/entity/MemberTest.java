@@ -8,6 +8,8 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.ggammu.realquerydsl.dto.MemberDto;
+import io.ggammu.realquerydsl.dto.QMemberDto;
+import io.ggammu.realquerydsl.dto.UserDto;
 import static io.ggammu.realquerydsl.entity.QMember.member;
 import static io.ggammu.realquerydsl.entity.QTeam.team;
 import java.util.List;
@@ -542,6 +544,40 @@ class MemberTest {
 
         //then
         for (MemberDto memberDto : fetch) {
+            System.out.println("member = " + memberDto);
+        }
+    }
+
+    @Test
+    void findUserDtoByField() {
+        //given
+        List<UserDto> fetch = query
+                .select(Projections.fields(UserDto.class,
+                        member.username.as("name"),
+                        member.age
+                ))
+                .from(member)
+                .fetch();
+        //when
+
+        //then
+        for (UserDto userDto: fetch) {
+            System.out.println("member = " + userDto);
+        }
+    }
+
+    @Test
+    void findDtoByQueryProjection() {
+        //given
+        List<MemberDto> fetch = query
+                .select(new QMemberDto(member.username, member.age))
+                .from(member)
+                .fetch();
+
+        //when
+
+        //then
+        for (MemberDto memberDto: fetch) {
             System.out.println("member = " + memberDto);
         }
     }
