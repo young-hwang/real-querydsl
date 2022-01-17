@@ -23,6 +23,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
@@ -650,6 +651,27 @@ class MemberTest {
             return member.username.eq(usernameParam);
         else
             return null;
+    }
+
+    @Commit
+    @Test
+    void update() {
+        //given
+        long count = query
+                .update(member)
+                .set(member.username, "비회원")
+                .where(member.age.lt(28))
+                .execute();
+
+        //when
+
+        List<Member> fetch = query
+                .selectFrom(member)
+                .fetch();
+
+        fetch.forEach(System.out::println);
+        //then
+        assertThat(count).isEqualTo(2);
     }
 
 }
