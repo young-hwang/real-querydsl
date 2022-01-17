@@ -653,9 +653,8 @@ class MemberTest {
             return null;
     }
 
-    @Commit
     @Test
-    void update() {
+    void bulkUpdate() {
         //given
         long count = query
                 .update(member)
@@ -672,6 +671,31 @@ class MemberTest {
         fetch.forEach(System.out::println);
         //then
         assertThat(count).isEqualTo(2);
+    }
+
+    @Test
+    void bulkAdd() {
+        //given
+        long count = query
+                .update(member)
+                .set(member.age, member.age.add(1))
+                .execute();
+
+        //when
+
+        //then
+    }
+
+    @Test
+    void bulkDelete() {
+        //given
+        long count = query
+                .delete(member)
+                .where(member.age.gt(18))
+                .execute();
+        //when
+
+        //then
     }
 
 }
