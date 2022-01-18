@@ -698,4 +698,34 @@ class MemberTest {
         //then
     }
 
+    @Test
+    void sqlFunction() {
+        //given
+        List<String> fetch = query
+                .select(Expressions.stringTemplate("function('replace', {0}, {1}, {2})",
+                        member.username, "member", "M"))
+                .from(member)
+                .fetch();
+        //when
+
+        //then
+        fetch.forEach(System.out::println);
+    }
+
+    @Test
+    void sqlFunction2() {
+        //given
+        List<String> fetch = query
+                .select(member.username)
+                .from(member)
+//                .where(member.username.eq(Expressions.stringTemplate("function('lower', {0})", member.username)))
+                .where(member.username.eq(member.username.lower()))
+                .fetch();
+
+        //when
+
+        //then
+        fetch.forEach(System.out::println);
+    }
+
 }
