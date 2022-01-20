@@ -4,6 +4,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.ggammu.realquerydsl.entity.Hello;
 import io.ggammu.realquerydsl.entity.QHello;
 import java.util.List;
+import java.util.stream.IntStream;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,4 +35,13 @@ class RealQuerydslApplicationTests {
 		assertThat(result.getId()).isEqualTo(hello.getId());
 	}
 
+	@Test
+	void create_stream() {
+		//given
+		IntStream range = IntStream.range(0, 100);
+		range.forEach(System.out::println);
+		//when
+
+		//then
+	}
 }
