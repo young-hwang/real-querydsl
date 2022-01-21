@@ -1,7 +1,6 @@
 package io.ggammu.realquerydsl.repository;
 
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.ggammu.realquerydsl.dto.MemberSearchCondition;
@@ -9,15 +8,13 @@ import io.ggammu.realquerydsl.dto.MemberTeamDto;
 import io.ggammu.realquerydsl.dto.QMemberTeamDto;
 import io.ggammu.realquerydsl.entity.Member;
 import static io.ggammu.realquerydsl.entity.QMember.member;
-import io.ggammu.realquerydsl.entity.QTeam;
 import static io.ggammu.realquerydsl.entity.QTeam.team;
 import java.util.List;
 import java.util.Optional;
 import javax.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import org.springframework.util.StringUtils;
-import static org.springframework.util.StringUtils.*;
+import static org.springframework.util.StringUtils.hasText;
 
 @RequiredArgsConstructor
 @Repository
