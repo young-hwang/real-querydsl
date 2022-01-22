@@ -2,10 +2,12 @@ package io.ggammu.realquerydsl.repository;
 
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.ggammu.realquerydsl.dto.MemberSearchCondition;
 import io.ggammu.realquerydsl.dto.MemberTeamDto;
 import io.ggammu.realquerydsl.dto.QMemberTeamDto;
+import io.ggammu.realquerydsl.entity.Member;
 import static io.ggammu.realquerydsl.entity.QMember.member;
 import static io.ggammu.realquerydsl.entity.QTeam.team;
 import java.util.List;
@@ -13,6 +15,7 @@ import javax.persistence.EntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 import static org.springframework.util.StringUtils.hasText;
 
 public class CustomizedMemberRepositoryImpl implements CustomizedMemberRepository {
@@ -92,7 +95,19 @@ public class CustomizedMemberRepositoryImpl implements CustomizedMemberRepositor
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        long count = queryFactory
+//        long count = queryFactory
+//                .select(member)
+//                .from(member)
+//                .leftJoin(member.team, team)
+//                .where(
+//                        usernameEq(condition.getUsername()),
+//                        teamNameEq(condition.getTeamName()),
+//                        ageGoe(condition.getAgeGoe()),
+//                        ageLoe(condition.getAgeLoe())
+//                )
+//                .fetchCount();
+
+        JPAQuery<Member> countQuery = queryFactory
                 .select(member)
                 .from(member)
                 .leftJoin(member.team, team)
@@ -101,10 +116,10 @@ public class CustomizedMemberRepositoryImpl implements CustomizedMemberRepositor
                         teamNameEq(condition.getTeamName()),
                         ageGoe(condition.getAgeGoe()),
                         ageLoe(condition.getAgeLoe())
-                )
-                .fetchCount();
+                );
 
-        return new PageImpl<>(fetch, pageable, count);
+//        return new PageImpl<>(fetch, pageable, count);
+        return PageableExecutionUtils.getPage(fetch, pageable, countQuery::fetchCount);
     }
 
     private BooleanExpression ageLoe(Integer ageLoe) {
