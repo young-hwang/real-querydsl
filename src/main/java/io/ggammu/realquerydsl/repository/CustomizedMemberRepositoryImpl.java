@@ -2,6 +2,7 @@ package io.ggammu.realquerydsl.repository;
 
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.ggammu.realquerydsl.dto.MemberSearchCondition;
@@ -15,16 +16,22 @@ import javax.persistence.EntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import org.springframework.data.support.PageableExecutionUtils;
 import static org.springframework.util.StringUtils.hasText;
 
-public class CustomizedMemberRepositoryImpl implements CustomizedMemberRepository {
+public class CustomizedMemberRepositoryImpl extends QuerydslRepositorySupport implements CustomizedMemberRepository {
 
     private final JPAQueryFactory queryFactory;
 
     public CustomizedMemberRepositoryImpl(EntityManager em) {
-        this.queryFactory = new JPAQueryFactory(em);
+        super(Member.class);
+        queryFactory = new JPAQueryFactory(em);
     }
+
+//    public CustomizedMemberRepositoryImpl(EntityManager em) {
+//        this.queryFactory = new JPAQueryFactory(em);
+//    }
 
     @Override
     public List<MemberTeamDto> search(MemberSearchCondition condition) {
@@ -68,6 +75,30 @@ public class CustomizedMemberRepositoryImpl implements CustomizedMemberRepositor
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetchResults();
+        List<MemberTeamDto> results = memberTeamDtoQueryResults.getResults();
+        long total = memberTeamDtoQueryResults.getTotal();
+        return new PageImpl<>(results, pageable, total);
+    }
+
+    @Override
+    public Page<MemberTeamDto> searchPageSimple2(MemberSearchCondition condition, Pageable pageable) {
+        JPQLQuery<MemberTeamDto> query = from(member)
+                .leftJoin(member.team, team)
+                .where(
+                        usernameEq(condition.getUsername()),
+                        teamNameEq(condition.getTeamName()),
+                        ageGoe(condition.getAgeGoe()),
+                        ageLoe(condition.getAgeLoe()))
+                .select(new QMemberTeamDto(
+                        member.id.as("memberId"),
+                        member.username,
+                        member.age,
+                        team.id.as("teamId"),
+                        team.name.as("teamName")));
+
+        JPQLQuery<MemberTeamDto> memberTeamDtoJPQLQuery = getQuerydsl().applyPagination(pageable, query);
+
+        QueryResults<MemberTeamDto> memberTeamDtoQueryResults = memberTeamDtoJPQLQuery.fetchResults();
         List<MemberTeamDto> results = memberTeamDtoQueryResults.getResults();
         long total = memberTeamDtoQueryResults.getTotal();
         return new PageImpl<>(results, pageable, total);
