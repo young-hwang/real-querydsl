@@ -5,6 +5,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import io.ggammu.realquerydsl.dto.MemberSearchCondition;
 import io.ggammu.realquerydsl.entity.Member;
 import static io.ggammu.realquerydsl.entity.QMember.member;
+import io.ggammu.realquerydsl.entity.QTeam;
 import static io.ggammu.realquerydsl.entity.QTeam.team;
 import io.ggammu.realquerydsl.repository.support.Querydsl4RepositorySupport;
 import java.util.List;
@@ -48,7 +49,9 @@ public class MemberTestRepository extends Querydsl4RepositorySupport {
 
     public Page<Member> searchApplyPagination(MemberSearchCondition condition, Pageable pageable) {
         Page<Member> result = applyPagination(pageable, query ->
-                query.selectFrom(member)
+                query
+                        .selectFrom(member)
+                        .join(member.team, team)
                         .where(
                                 usernameEq(condition.getUsername()),
                                 teamNameEq(condition.getTeamName()),
@@ -60,6 +63,29 @@ public class MemberTestRepository extends Querydsl4RepositorySupport {
         return result;
     }
 
+    public Page<Member> searchApplyComplexPagination(MemberSearchCondition condition, Pageable pageable) {
+        Page<Member> result = applyPagination(pageable, query ->
+                query
+                        .selectFrom(member)
+                        .join(member.team, team)
+                        .where(
+                                usernameEq(condition.getUsername()),
+                                teamNameEq(condition.getTeamName()),
+                                ageGoe(condition.getAgeGoe()),
+                                ageLoe(condition.getAgeLoe())
+                        ),
+                query -> query
+                        .selectFrom(member)
+                        .where(
+                                usernameEq(condition.getUsername()),
+                                teamNameEq(condition.getTeamName()),
+                                ageGoe(condition.getAgeGoe()),
+                                ageLoe(condition.getAgeLoe())
+                        )
+        );
+
+        return result;
+    }
     private BooleanExpression ageLoe(Integer ageLoe) {
         return ageLoe != null ? member.age.loe(ageLoe) : null;
     }
