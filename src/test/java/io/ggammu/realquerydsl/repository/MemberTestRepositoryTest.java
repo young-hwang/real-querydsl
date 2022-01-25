@@ -1,12 +1,10 @@
 package io.ggammu.realquerydsl.repository;
 
 import io.ggammu.realquerydsl.dto.MemberSearchCondition;
-import io.ggammu.realquerydsl.dto.MemberTeamDto;
 import io.ggammu.realquerydsl.entity.Member;
 import io.ggammu.realquerydsl.entity.Team;
 import javax.persistence.EntityManager;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -56,4 +54,5 @@ class MemberTestRepositoryTest {
         assertThat(results.getSize()).isEqualTo(3);
         assertThat(results.getContent()).extracting("username").containsExactly("member1", "member2", "member3");
     }
+
 }
